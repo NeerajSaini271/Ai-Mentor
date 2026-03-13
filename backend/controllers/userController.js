@@ -3,6 +3,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
+import path from "path";
+import { createNotification } from "./notificationController.js";
 
 // Generate JWT Token
 const generateToken = (id) => {
@@ -192,6 +194,13 @@ const purchaseCourse = async (req, res) => {
     user.purchasedCourses = updatedCourses;
     await user.save();
 
+    // ✅ Add Notification Trigger
+    createNotification(user.id, {
+      title: "Course Purchased!",
+      message: `You have successfully enrolled in "${courseTitle}". Start learning now!`,
+      type: "success",
+    });
+
     res.json({ message: "Course purchased successfully" });
   } catch (error) {
     console.error("PURCHASE ERROR:", error);
@@ -204,9 +213,97 @@ const updateCourseProgress = async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ message: "Not authorized" });
 
+    const { courseId, completedLesson, currentLesson, lessonData } = req.body;
+    if (!courseId) return res.status(400).json({ message: "Course ID is required" });
+
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    // Find the course in purchasedCourses
+    let purchasedCourses = [...(user.purchasedCourses || [])];
+    const courseIndex = purchasedCourses.findIndex(c => Number(c.courseId) === Number(courseId));
+
+    if (courseIndex === -1) {
+      return res.status(404).json({ message: "Course not found in your collection" });
+    }
+
+    const course = purchasedCourses[courseIndex];
+    course.progress = course.progress || { completedLessons: [], currentLesson: null, lessonData: {} };
+
+    // Update current lesson
+    if (currentLesson) {
+      course.progress.currentLesson = currentLesson;
+    }
+
+    // Update lesson data (AI content, etc.)
+    if (lessonData) {
+      course.progress.lessonData = {
+        ...(course.progress.lessonData || {}),
+        [lessonData.lessonId]: lessonData.data
+      };
+    }
+
+    // Add completed lesson if provided
+    if (completedLesson && completedLesson.lessonId) {
+      const alreadyCompleted = course.progress.completedLessons.some(
+        l => l.lessonId === completedLesson.lessonId
+      );
+      if (!alreadyCompleted) {
+        course.progress.completedLessons.push({
+          lessonId: completedLesson.lessonId,
+          completedAt: new Date()
+        });
+
+        // ✅ CHECK FOR MILESTONES & COMPLETION
+        // We need total lesson count. For now, we'll try to get it from learning.json
+        try {
+          const { getCourseAndLessonTitles } = await import("./courseController.js");
+          const learningPath = path.join(process.cwd(), "frontend/public/data/learning.json");
+          const learningData = JSON.parse(fs.readFileSync(learningPath, "utf-8"));
+          const courseLearning = learningData[String(courseId)];
+
+          if (courseLearning) {
+            const allLessons = (courseLearning.modules || []).flatMap(m => m.lessons || []);
+            const totalLessons = allLessons.length;
+            const completedCount = course.progress.completedLessons.length;
+            const progressPercent = (completedCount / totalLessons) * 100;
+
+            const courseTitle = courseLearning.course?.title || "your course";
+
+            // Milestone: 50%
+            if (completedCount === Math.ceil(totalLessons / 2) && totalLessons > 1) {
+              createNotification(user.id, {
+                title: "Halfway There! 🚀",
+                message: `You've completed 50% of "${courseTitle}". Keep going!`,
+                type: "achievement"
+              });
+            }
+
+            // Completion: 100%
+            if (completedCount === totalLessons) {
+              createNotification(user.id, {
+                title: "Course Completed! 🎓",
+                message: `Congratulations! You've successfully finished "${courseTitle}".`,
+                type: "success"
+              });
+              
+              // Update analytics
+              user.analytics = {
+                ...(user.analytics || {}),
+                completedCourses: (user.analytics?.completedCourses || 0) + 1
+              };
+            }
+          }
+        } catch (err) {
+          console.error("Error calculating milestone:", err);
+        }
+      }
+    }
+
+    purchasedCourses[courseIndex] = course;
+    user.purchasedCourses = purchasedCourses;
+
+    // Basic analytics update
     user.analytics = user.analytics || {
       totalHours: 0,
       daysStudied: 0,
@@ -217,7 +314,7 @@ const updateCourseProgress = async (req, res) => {
     };
 
     await user.save();
-    res.json({ message: "Progress updated successfully" });
+    res.json({ message: "Progress updated successfully", purchasedCourses: user.purchasedCourses });
   } catch (error) {
     console.error("PROGRESS ERROR:", error);
     res.status(500).json({ message: "Server error" });
@@ -319,6 +416,13 @@ const updateUserProfile = async (req, res) => {
     user.bio = req.body.bio ?? user.bio;
 
     await user.save();
+
+    // ✅ Add Notification Trigger
+    createNotification(user.id, {
+      title: "Profile Updated",
+      message: "Your profile information has been successfully updated.",
+      type: "account",
+    });
 
     res.status(200).json({
       id: user.id,

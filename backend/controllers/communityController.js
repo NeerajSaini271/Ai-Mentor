@@ -1,6 +1,7 @@
 import CommunityPost from "../models/CommunityPost.js";
 import User from "../models/User.js";
 import crypto from "crypto";
+import { createNotification } from "./notificationController.js";
 
 // @desc    Get course community stats (list of courses with post counts)
 // @route   GET /api/community/courses
@@ -260,6 +261,16 @@ const replyCommunityPost = async (req, res) => {
     const updatedReplies = [...post.replies, newReply];
     post.replies = updatedReplies;
     await post.save();
+
+    // ✅ Notification Trigger (Discussion Reply)
+    // Send notification to the post author (unless they are replying to their own post)
+    if (post.userId !== req.user.id) {
+      createNotification(post.userId, {
+        title: "New Reply on your post",
+        message: `${req.user.name} replied: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`,
+        type: "social",
+      });
+    }
 
     const updated = await CommunityPost.findByPk(post.id, {
       include: [
