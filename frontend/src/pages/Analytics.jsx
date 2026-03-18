@@ -97,7 +97,7 @@ const Analytics = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="min-h-screen bg-canvas-alt flex flex-col">
         <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
         <Sidebar
           sidebarOpen={sidebarOpen}
@@ -108,7 +108,7 @@ const Analytics = () => {
         />
         <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${sidebarCollapsed ? 'lg:ml-20' : 'lg:ml-80'
           }`}>
-          <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto bg-gray-50 p-8">
+          <main className="flex-1 mt-16 overflow-x-hidden overflow-y-auto bg-canvas-alt p-8">
             <div className="max-w-7xl mx-auto space-y-8">
               <div className="flex justify-center items-center h-64">
                 <div className="text-center">

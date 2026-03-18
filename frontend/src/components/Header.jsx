@@ -161,25 +161,7 @@ const Header = ({ searchQuery = "", onSearchChange }) => {
         </div>
 
         {/* Search Bar (Mobile par hidden) */}
-        <div className="flex-1 max-w-md mx-8 hidden md:block">
-          <div className="relative group">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-teal-500 transition-colors w-4 h-4" />
-            <input
-              type="text"
-              placeholder={t("header.search_placeholder")}
-              value={effectiveSearchQuery}
-              onChange={(event) => {
-                const nextValue = event.target.value;
-                if (typeof onSearchChange === "function") {
-                  onSearchChange(nextValue);
-                  return;
-                }
-                setInternalSearchQuery(nextValue);
-              }}
-              className="w-full pl-12 pr-4 py-2.5 bg-canvas border border-border rounded-2xl text-sm focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all outline-none"
-            />
-          </div>
-        </div>
+       
 
         {/* Action Buttons & Profile */}
         <div className="flex items-center space-x-5">
