@@ -20,7 +20,6 @@ const CoursesPage = () => {
 
   const [filters, setFilters] = useState({ category: [], level: [], price: [] });
   const [showFilters, setShowFilters] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const toggleFilter = (field, value) => {
     setFilters(prev => {
