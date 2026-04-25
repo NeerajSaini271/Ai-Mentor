@@ -180,7 +180,7 @@ const CompleteProfilePage = () => {
       }
 
       const response = await fetch(
-        `http://localhost:5000/api/users/complete-profile`,
+        `${API_BASE_URL}/api/users/complete-profile`,
         {
           method: "POST",
           headers: {

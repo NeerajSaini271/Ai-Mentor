@@ -2,7 +2,7 @@ export const getAIVideo = async (payload) => {
   const token = localStorage.getItem("token");
 
   const response = await fetch(
-    `http://localhost:5000/api/ai/generate-video`,
+    `${API_BASE_URL}/api/ai/generate-video`,
     {
       method: "POST",
       headers: {

@@ -46,7 +46,7 @@ app.add_middleware(
 # --------------------------
 # Gemini Client
 # --------------------------
-client = genai.Client(api_key="AIzaSyBXNBQ7LFPtUTJI0Urbz0iRqcs5SE5P3a4")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 # --------------------------
 # Request Model
