@@ -956,7 +956,7 @@ export default function Learning() {
                 <div className="absolute left-0 mt-2 w-full sm:w-[400px] bg-white dark:bg-gray-900 border border-border rounded-2xl shadow-xl z-50 max-h-96 overflow-y-auto" style={{ display: expandedModule ? 'block' : 'none' }}>
                   {modules && modules.map((module, mIdx) => (
                     <div key={module.id || `module-${mIdx + 1}`}
-                      className="border-b border-border last:border-b-0"merging 
+                      className="border-b border-border last:border-b-0"
                     >
                       <button
                         className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-blue-100 dark:hover:bg-blue-900 font-semibold text-main focus:outline-none text-base"
