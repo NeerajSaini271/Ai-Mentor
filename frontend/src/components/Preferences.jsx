@@ -162,7 +162,7 @@ export default function Preferences({ mode = "modal", onSuccess }) {
           return;
         }
 
-        const res = await axios.get("/api/preferences", {
+        const res = await axios.get("${API_BASE_URL}/api/preferences", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
